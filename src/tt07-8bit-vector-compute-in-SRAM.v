@@ -1,3 +1,8 @@
+// Ops
+`define LOAD_W  2'b00
+`define LOAD_A  2'b01
+`define READ_S  2'b10
+
 `default_nettype none
 
 module tt_um_8bit_vector_compute_in_SRAM (
@@ -17,13 +22,13 @@ module tt_um_8bit_vector_compute_in_SRAM (
     assign uio_out = 0;
 
     // output
-    reg [7:0] data_out = s_adder_tree[7:0];
+    reg [7:0] data_out;
     assign uo_out = data_out;
 
     // inputs
     wire [1:0] op = ui_in[7:6];           // op code or control
     wire [5:0] address = ui_in[5:0];      // MAC unit address
-    wire [7:0] data_in = uio_in[7:0];          // Data in for loading
+    wire [7:0] data_in = uio_in[7:0];     // Data in for loading
 
     // MACs
     wire [7:0]  mac_in[0:7];
@@ -41,7 +46,7 @@ module tt_um_8bit_vector_compute_in_SRAM (
     assign mac_in[6] = data_in;
     assign mac_in[7] = data_in;
 
-    // Instantiate 8 MAC modules using a generate block
+    // Instantiate 8 MAC modules
     genvar i;
     generate
         for (i = 0; i < 8; i = i + 1) begin : mac_gen
@@ -134,33 +139,70 @@ module tt_um_8bit_vector_compute_in_SRAM (
     );
 
     wire [18:0] s_adder_tree =  {l3_0_c, l3_0_s};
-
+    reg cache_s_adder_tree_en;
 
 
     // Control & Op
     always @(*) begin
         // Default values
-        integer j;
-        for (j = 0; j < 8; j = j + 1) begin
-            mac_en_wr_w[j] = 0;
-            mac_en_wr_a[j] = 0;
+        integer j1;
+        for (j1 = 0; j1 < 8; j1 = j1 + 1) begin
+            mac_en_wr_w[j1] = 0;
+            mac_en_wr_a[j1] = 0;
         end
+        cache_s_adder_tree_en = 0;
 
         case (op)
-            2'b00: begin
+            // Load MAC W
+            `LOAD_W: begin
                 if (address < 8) begin
-                    mac_en_wr_w[address] = 1;
+                    mac_en_wr_w[address[2:0]] = 1;
                 end
             end
-            2'b01: begin
+            // Load MAC A
+            `LOAD_A: begin
                 if (address < 8) begin
-                    mac_en_wr_a[address] = 1;
+                    mac_en_wr_a[address[2:0]] = 1;
                 end
+            end
+            `READ_S: begin
+                cache_s_adder_tree_en = 1;
             end
             default: begin
                 // Do nothing for other op codes
             end
         endcase
+    end
+
+    reg [7:0] cached_s_adder_tree [0:2];
+
+    reg out_en;
+    reg [3:0] out_counter;
+
+    always @(posedge clk or posedge rst) begin
+        if(rst) begin
+            integer j2;
+            for (j2 = 0; j2 < 2; j2 = j2 + 1) begin
+                cached_s_adder_tree[j2] <= 0;
+            end
+            out_counter <= 0;
+            out_en <= 0;
+        end
+        else if (cache_s_adder_tree_en) begin
+            cached_s_adder_tree[0] <= s_adder_tree[7:0];
+            cached_s_adder_tree[1] <= s_adder_tree[15:8];
+            cached_s_adder_tree[2] <= {5'b0000, s_adder_tree[18:16]};
+
+            out_en <= 1;
+            out_counter <= 2;
+        end
+        else if (out_en) begin
+            data_out <= cached_s_adder_tree[out_counter];
+            out_counter <= out_counter - 1;
+            if (out_counter == 0) begin
+                out_en <= 0;
+            end
+        end
     end
 
 endmodule
