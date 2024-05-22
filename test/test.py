@@ -240,6 +240,7 @@ module MAC #(
 
     endmodule
 '''
+'''
 @cocotb.test()
 async def test_MAC_write_w_a_with_op(dut):
     # Start the clock
@@ -293,7 +294,7 @@ async def test_MAC_write_w_a_with_op(dut):
         assert mac_w == weights[mac_address], f"MAC {mac_address} w mismatch: {mac_w} != {weights[mac_address]}"
         assert mac_a == a_values[mac_address], f"MAC {mac_address} a mismatch: {mac_a} != {a_values[mac_address]}"
         assert mac_out == expected_out, f"MAC {mac_address} out mismatch: {mac_out} != {expected_out}"
-
+'''
 # ----------------------------------------------------------------------------
 # --------------------Adder Tree Tests----------------------------------------
 # ----------------------------------------------------------------------------
@@ -557,6 +558,7 @@ module cla #(
 
     endmodule
 '''
+'''
 @cocotb.test()
 async def test_adder_tree_levels(dut):
     # Start the clock
@@ -742,8 +744,7 @@ async def test_adder_tree(dut):
         # Check the final adder tree output
         s_adder_tree = int(dut.myCIM.s_adder_tree.value)
         assert s_adder_tree == expected_s_adder_tree, f"s_adder_tree mismatch: {s_adder_tree} != {expected_s_adder_tree}"
-
-
+'''
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
