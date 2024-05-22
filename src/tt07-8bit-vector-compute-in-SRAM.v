@@ -17,7 +17,7 @@ module tt_um_8bit_vector_compute_in_SRAM (
     assign uio_out = 0;
 
     // output
-    reg [7:0] data_out;
+    reg [7:0] data_out = 0; //// FIX ME
     assign uo_out = data_out;
 
     // inputs
