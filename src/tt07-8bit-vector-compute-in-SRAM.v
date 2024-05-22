@@ -17,7 +17,7 @@ module tt_um_8bit_vector_compute_in_SRAM (
     assign uio_out = 0;
 
     // output
-    reg [7:0] data_out = 0; //// FIX ME
+    reg [7:0] data_out = s_adder_tree[7:0];
     assign uo_out = data_out;
 
     // inputs
