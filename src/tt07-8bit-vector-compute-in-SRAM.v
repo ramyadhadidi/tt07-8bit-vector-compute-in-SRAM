@@ -2,6 +2,7 @@
 `define LOAD_W  2'b00
 `define LOAD_A  2'b01
 `define READ_S  2'b10
+`define NOP     2'b11
 
 `default_nettype none
 
@@ -168,25 +169,23 @@ module tt_um_8bit_vector_compute_in_SRAM (
             `READ_S: begin
                 cache_s_adder_tree_en = 1;
             end
-            default: begin
-                // Do nothing for other op codes
-            end
         endcase
     end
 
     reg [7:0] cached_s_adder_tree [0:2];
 
     reg out_en;
-    reg [3:0] out_counter;
+    reg [1:0] out_counter;
 
     always @(posedge clk or posedge rst) begin
         if(rst) begin
             integer j2;
-            for (j2 = 0; j2 < 2; j2 = j2 + 1) begin
+            for (j2 = 0; j2 < 3; j2 = j2 + 1) begin
                 cached_s_adder_tree[j2] <= 0;
             end
             out_counter <= 0;
             out_en <= 0;
+            data_out <= 0;
         end
         else if (cache_s_adder_tree_en) begin
             cached_s_adder_tree[0] <= s_adder_tree[7:0];
@@ -198,9 +197,10 @@ module tt_um_8bit_vector_compute_in_SRAM (
         end
         else if (out_en) begin
             data_out <= cached_s_adder_tree[out_counter];
-            out_counter <= out_counter - 1;
             if (out_counter == 0) begin
                 out_en <= 0;
+            end else begin
+                out_counter <= out_counter - 1;
             end
         end
     end
@@ -246,7 +246,7 @@ module MAC #(
 
 
 // Adder Carry Look ahead from https://github.com/Hammersamatom/cla
-// must verify, it says it verfied till 32 bits
+// Verfied until 32 bits
 module cla #(
     parameter BITS = 16
 )(
