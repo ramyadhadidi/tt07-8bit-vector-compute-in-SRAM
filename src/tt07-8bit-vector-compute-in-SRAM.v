@@ -6,7 +6,9 @@
 
 `default_nettype none
 
-module tt_um_8bit_vector_compute_in_SRAM (
+module tt_um_8bit_vector_compute_in_SRAM #(
+    parameter MAC_SIZE=16
+)(
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
@@ -32,25 +34,22 @@ module tt_um_8bit_vector_compute_in_SRAM (
     wire [7:0] data_in = uio_in[7:0];     // Data in for loading
 
     // MACs
-    wire [7:0]  mac_in[0:7];
-    reg         mac_en_wr_w[0:7];
-    reg         mac_en_wr_a[0:7];
-    wire [15:0] mac_out[0:7];
+    wire [7:0]  mac_in[0:MAC_SIZE-1];
+    reg         mac_en_wr_w[0:MAC_SIZE-1];
+    reg         mac_en_wr_a[0:MAC_SIZE-1];
+    wire [15:0] mac_out[0:MAC_SIZE-1];
 
-    // Assigning outside genvar, not sure why cocotb throws an error if inside
-    assign mac_in[0] = data_in;
-    assign mac_in[1] = data_in;
-    assign mac_in[2] = data_in;
-    assign mac_in[3] = data_in;
-    assign mac_in[4] = data_in;
-    assign mac_in[5] = data_in;
-    assign mac_in[6] = data_in;
-    assign mac_in[7] = data_in;
+    genvar j;
+    generate
+        for (j = 0; j < MAC_SIZE; j = j + 1) begin : mac_in_gen
+            assign mac_in[j] = data_in;
+        end
+    endgenerate
 
     // Instantiate 8 MAC modules
     genvar i;
     generate
-        for (i = 0; i < 8; i = i + 1) begin : mac_gen
+        for (i = 0; i < MAC_SIZE; i = i + 1) begin : mac_gen
             MAC u_mac (
                 .clk(clk),
                 .rst(rst),
@@ -169,6 +168,8 @@ module tt_um_8bit_vector_compute_in_SRAM (
             `READ_S: begin
                 cache_s_adder_tree_en = 1;
             end
+            `NOP: begin
+            end
         endcase
     end
 
@@ -188,7 +189,8 @@ module tt_um_8bit_vector_compute_in_SRAM (
             data_out <= 0;
         end
         else if (cache_s_adder_tree_en) begin
-            cached_s_adder_tree[0] <= s_adder_tree[7:0];
+            // cached_s_adder_tree[0] <= s_adder_tree[7:0];
+            cached_s_adder_tree[0] <= {mac_out[8][2], mac_out[9][3], mac_out[10][2], mac_out[11][2], mac_out[12][2], mac_out[13][2], mac_out[14][2], mac_out[15][2]};
             cached_s_adder_tree[1] <= s_adder_tree[15:8];
             cached_s_adder_tree[2] <= {5'b0000, s_adder_tree[18:16]};
 
