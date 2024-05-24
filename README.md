@@ -1,4 +1,5 @@
-![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
+![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg)
+<!-- ![](../../workflows/fpga/badge.svg) -->
 
 # tt07-8bit-vector-compute-in-SRAM
 
