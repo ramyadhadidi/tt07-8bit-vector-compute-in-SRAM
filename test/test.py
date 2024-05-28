@@ -1220,91 +1220,91 @@ async def test_read_s(dut):
 # ----------------------------------------------------------------------------
 # ---------------------------Only Extranl Singnals Tests----------------------
 # ----------------------------------------------------------------------------
-# @cocotb.test()
-# async def test_read_only_with_external(dut):
-#     # Start the clock
-#     clock = Clock(dut.clk, 10, units="ns")
-#     cocotb.start_soon(clock.start())
+@cocotb.test()
+async def test_read_only_with_external(dut):
+    # Start the clock
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start())
 
-#     # Reset the device
-#     dut.rst_n.value = 0
-#     await ClockCycles(dut.clk, 5)  # Hold reset for 5 clock cycles
-#     dut.rst_n.value = 1
-#     await ClockCycles(dut.clk, 5)  # Wait for a few clock cycles after reset
+    # Reset the device
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)  # Hold reset for 5 clock cycles
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)  # Wait for a few clock cycles after reset
 
-#     # Function to write a weight to a specified MAC
-#     async def write_weight(mac_address, weight):
-#         # Set the op code to 00 (write weight) and address
-#         dut.ui_in.value = (0b00 << 6) | mac_address
-#         # Set the weight data
-#         dut.uio_in.value = weight
-#         # Wait for a clock cycle to simulate the write
-#         await ClockCycles(dut.clk, 1)
+    # Function to write a weight to a specified MAC
+    async def write_weight(mac_address, weight):
+        # Set the op code to 00 (write weight) and address
+        dut.ui_in.value = (0b00 << 6) | mac_address
+        # Set the weight data
+        dut.uio_in.value = weight
+        # Wait for a clock cycle to simulate the write
+        await ClockCycles(dut.clk, 1)
 
-#     # Function to write a value to 'a' register of a specified MAC
-#     async def write_act(mac_address, a_value):
-#         # Set the op code to 01 (write a value) and address
-#         dut.ui_in.value = (0b01 << 6) | mac_address
-#         # Set the a value data
-#         dut.uio_in.value = a_value
-#         # Wait for a clock cycle to simulate the write
-#         await ClockCycles(dut.clk, 1)
+    # Function to write a value to 'a' register of a specified MAC
+    async def write_act(mac_address, a_value):
+        # Set the op code to 01 (write a value) and address
+        dut.ui_in.value = (0b01 << 6) | mac_address
+        # Set the a value data
+        dut.uio_in.value = a_value
+        # Wait for a clock cycle to simulate the write
+        await ClockCycles(dut.clk, 1)
 
-#     # Function to read the result of the adder tree
-#     async def read_s():
-#         # Set the op code to 10 (read s_adder_tree)
-#         dut.ui_in.value = 0b10 << 6
-#         await ClockCycles(dut.clk, 1)
+    # Function to read the result of the adder tree
+    async def read_s():
+        # Set the op code to 10 (read s_adder_tree)
+        dut.ui_in.value = 0b10 << 6
+        await ClockCycles(dut.clk, 1)
 
-#         # Prepare to read out the result
-#         dut.ui_in.value = 0b11 << 6
-#         await ClockCycles(dut.clk, 1)
+        # Prepare to read out the result
+        dut.ui_in.value = 0b11 << 6
+        await ClockCycles(dut.clk, 1)
 
-#         result = 0
-#         for i in range(3):
-#             await RisingEdge(dut.clk)
-#             result = (result << 8) | int(dut.uo_out.value)
-#         return result
+        result = 0
+        for i in range(3):
+            await RisingEdge(dut.clk)
+            result = (result << 8) | int(dut.uo_out.value)
+        return result
 
-#     # Test vectors for weights and a values
-#     test_vectors = [
-#         # Positive values
-#         ([1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1]),
-#         ([1, 1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7, 8]),
-#         ([10, 20, 30, 40, 50, 60, 70, 80], [5, 15, 25, 35, 45, 55, 65, 75]),
-#         ([255, 255, 255, 255, 255, 255, 255, 255], [1, 1, 1, 1, 1, 1, 1, 1]),
-#         ([0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]),
-#         ([1, 2, 3, 4, 5, 6, 7, 8], [8, 7, 6, 5, 4, 3, 2, 1]),
-#         ([255, 255, 255, 255, 255, 255, 255, 255], [255, 255, 255, 255, 255, 255, 255, 255]),
-#         ([255, 0, 255, 0, 255, 0, 255, 0], [0, 255, 0, 255, 0, 255, 0, 255]),
-#         ([128, 64, 32, 16, 8, 4, 2, 1], [1, 2, 4, 8, 16, 32, 64, 128]),
-#         ([254, 253, 252, 251, 250, 249, 248, 247], [1, 2, 3, 4, 5, 6, 7, 8]),
-#         ([1, 2, 3, 4, 5, 6, 7, 8], [254, 253, 252, 251, 250, 249, 248, 247]),
-#         ([170, 85, 170, 85, 170, 85, 170, 85], [85, 170, 85, 170, 85, 170, 85, 170]),
-#         ([255, 127, 63, 31, 15, 7, 3, 1], [1, 3, 7, 15, 31, 63, 127, 255]),
-#         ([100, 150, 200, 250, 50, 100, 150, 200], [200, 150, 100, 50, 250, 200, 150, 100]),
-#         # Negative values (two's complement)
-#         ([255, 255, 255, 255, 255, 255, 255, 255], [255, 255, 255, 255, 255, 255, 255, 255]),  # All -1
-#         ([128, 128, 128, 128, 128, 128, 128, 128], [128, 128, 128, 128, 128, 128, 128, 128]),  # All -128
-#         ([128, 255, 128, 255, 128, 255, 128, 255], [255, 128, 255, 128, 255, 128, 255, 128]),  # Alternating -128 and -1
-#         ([200, 150, 100, 50, 250, 200, 150, 100], [56, 106, 156, 206, 6, 56, 106, 156])  # Mixed positive and negative values
-#     ]
+    # Test vectors for weights and a values
+    test_vectors = [
+        # Positive values
+        ([1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1]),
+        ([1, 1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7, 8]),
+        ([10, 20, 30, 40, 50, 60, 70, 80], [5, 15, 25, 35, 45, 55, 65, 75]),
+        ([255, 255, 255, 255, 255, 255, 255, 255], [1, 1, 1, 1, 1, 1, 1, 1]),
+        ([0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]),
+        ([1, 2, 3, 4, 5, 6, 7, 8], [8, 7, 6, 5, 4, 3, 2, 1]),
+        ([255, 255, 255, 255, 255, 255, 255, 255], [255, 255, 255, 255, 255, 255, 255, 255]),
+        ([255, 0, 255, 0, 255, 0, 255, 0], [0, 255, 0, 255, 0, 255, 0, 255]),
+        ([128, 64, 32, 16, 8, 4, 2, 1], [1, 2, 4, 8, 16, 32, 64, 128]),
+        ([254, 253, 252, 251, 250, 249, 248, 247], [1, 2, 3, 4, 5, 6, 7, 8]),
+        ([1, 2, 3, 4, 5, 6, 7, 8], [254, 253, 252, 251, 250, 249, 248, 247]),
+        ([170, 85, 170, 85, 170, 85, 170, 85], [85, 170, 85, 170, 85, 170, 85, 170]),
+        ([255, 127, 63, 31, 15, 7, 3, 1], [1, 3, 7, 15, 31, 63, 127, 255]),
+        ([100, 150, 200, 250, 50, 100, 150, 200], [200, 150, 100, 50, 250, 200, 150, 100]),
+        # Negative values (two's complement)
+        ([255, 255, 255, 255, 255, 255, 255, 255], [255, 255, 255, 255, 255, 255, 255, 255]),  # All -1
+        ([128, 128, 128, 128, 128, 128, 128, 128], [128, 128, 128, 128, 128, 128, 128, 128]),  # All -128
+        ([128, 255, 128, 255, 128, 255, 128, 255], [255, 128, 255, 128, 255, 128, 255, 128]),  # Alternating -128 and -1
+        ([200, 150, 100, 50, 250, 200, 150, 100], [56, 106, 156, 206, 6, 56, 106, 156])  # Mixed positive and negative values
+    ]
 
 
-#     for weights, a_values in test_vectors:
-#         # Iterate over all MAC addresses and write the weights and 'a' values
-#         for mac_address in range(8):
-#             await write_weight(mac_address, weights[mac_address])
-#             await write_act(mac_address, a_values[mac_address])
+    for weights, a_values in test_vectors:
+        # Iterate over all MAC addresses and write the weights and 'a' values
+        for mac_address in range(8):
+            await write_weight(mac_address, weights[mac_address])
+            await write_act(mac_address, a_values[mac_address])
 
-#         # Wait for a few clock cycles to ensure the writes are complete
-#         await ClockCycles(dut.clk, 10)
+        # Wait for a few clock cycles to ensure the writes are complete
+        await ClockCycles(dut.clk, 10)
 
-#         # Send READ_S command to read the s_adder_tree value
-#         result = await read_s()
+        # Send READ_S command to read the s_adder_tree value
+        result = await read_s()
 
-#         # Calculate the expected final result
-#         expected_s_adder_tree = sum(weights[i] * a_values[i] for i in range(8))
+        # Calculate the expected final result
+        expected_s_adder_tree = sum(weights[i] * a_values[i] for i in range(8))
 
-#         # Check the final adder tree output
-#         assert result == expected_s_adder_tree, f"s_adder_tree mismatch: {result} != {expected_s_adder_tree}"
+        # Check the final adder tree output
+        assert result == expected_s_adder_tree, f"s_adder_tree mismatch: {result} != {expected_s_adder_tree}"

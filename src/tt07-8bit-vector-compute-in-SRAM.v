@@ -7,7 +7,7 @@
 `default_nettype none
 
 module tt_um_8bit_vector_compute_in_SRAM #(
-    parameter MAC_SIZE=16
+    parameter MAC_SIZE=8
 )(
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
@@ -189,8 +189,7 @@ module tt_um_8bit_vector_compute_in_SRAM #(
             data_out <= 0;
         end
         else if (cache_s_adder_tree_en) begin
-            // cached_s_adder_tree[0] <= s_adder_tree[7:0];
-            cached_s_adder_tree[0] <= {mac_out[8][2], mac_out[9][3], mac_out[10][2], mac_out[11][2], mac_out[12][2], mac_out[13][2], mac_out[14][2], mac_out[15][2]};
+            cached_s_adder_tree[0] <= s_adder_tree[7:0];
             cached_s_adder_tree[1] <= s_adder_tree[15:8];
             cached_s_adder_tree[2] <= {5'b0000, s_adder_tree[18:16]};
 
